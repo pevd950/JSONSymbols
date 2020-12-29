@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<syntax name="mylang">
+<syntax name="JSON">
+
     <meta>
         <name>JSONSymbols</name>
         <type>structured</type>
+        <parent>json</parent>
         <preferred-file-extension>json</preferred-file-extension>
     </meta>
     
@@ -10,7 +12,7 @@
         <extension priority="1.0">json</extension>
     </detectors>
     
-    <!-- TODO: Do I need indentation rules?--> 
+    <!-- TODO: Do I need indentation rules? 
     <indentation>
         <increase>
             <expression>(\{[^}\"']*$)|(\[[^\]\"']*$)|(\([^)\"']*$)</expression>
@@ -18,19 +20,19 @@
         <decrease>
             <expression>^\s*(\s*/\*.*\*/\s*)*[\}\]\)\\]</expression>
         </decrease>
-    </indentation>
+    </indentation> -->
     
-   <comments>
+   <!-- <comments>
        <single>
            <expression>#</expression>
        </single>
-    </comments>
+    </comments> -->
     
-    <brackets>
+    <!-- <brackets>
         <pair open="{" close="}" />
-    </brackets>
+    </brackets> -->
     
-    <surrounding-pairs>
+    <!-- <surrounding-pairs>
         <pair open="&lt;" close="&gt;" />
         <pair open="{" close="}" />
         <pair open="[" close="]" />
@@ -38,25 +40,48 @@
         <pair open="&apos;" close="&apos;" />
         <pair open="&quot;" close="&quot;" />
         <pair open="`" close="`" />
-    </surrounding-pairs>
+    </surrounding-pairs> -->
+    
+    <scopes>
+       <include syntax="self" collection="objects"/>
+       <include syntax="self" collection="symbols"/>
+       <include syntax="json" />
+    </scopes>
+    
     
     <collections>
-        <!-- Tags -->
-        <collection name="values">
-            <include syntax="self" collection="strings" />
-            <include syntax="self" collection="numbers" />
-            <include syntax="self" collection="boolean" />
-            <include syntax="self" collection="objects" />
-            <include syntax="self" collection="arrays" />
-            <include syntax="self" collection="null" />
-        </collection>
-        <collection name="strings">
-            <scope name="json.string">
-                <expression>&quot;.*&quot;</expression>
-            </scope>
-            <scope name="json.string">
-                <expression>&apos;.*&apos;</expression>
-            </scope>
-        </collection>
+       <!--Symbols  -->         
+       <collection name="symbols">
+          <scope name="json.string.key.double-quoted">
+             <symbol type="constant"/>
+             <!-- <include syntax="json" collection="strings"/> -->
+              <expression>(&quot;)(?:(?:(\\(?:\\|&apos;|&quot;|n|r|t|b|f))|([^&quot;]))*)(&quot;)\s*(:)</expression>
+              <capture number="1" name="json.string.key.double-quoted.delimiter" />
+              <capture number="2" name="json.string.key.double-quoted.escape" />
+              <capture number="3" name="json.string.key.double-quoted.content" />
+              <capture number="4" name="json.string.key.double-quoted.delimiter" />
+              <capture number="5" name="json.operator.colon" />
+          </scope>
+       </collection>
+
+       <collection name="objects">
+         <scope name="json.object.close">
+            <symbol type="constant">
+               <context behavior="end" group-by-name="true" />
+            </symbol>
+            <expression>}</expression>
+            <capture number="1" name="json.object.name" />
+         </scope>
+         <scope name="json.object.open">
+            <symbol type="constant">
+               <context behavior="start" group-by-name="true" />
+            </symbol>
+            <expression>{</expression>
+            <capture number="1" name="json.object.name" />
+            <subscopes>
+                 <include syntax="self" collection="symbols" />
+            </subscopes>
+         </scope>
+       </collection>
     </collections>
 </syntax>
