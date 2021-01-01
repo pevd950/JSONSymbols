@@ -12,35 +12,6 @@
         <extension priority="1.0">json</extension>
     </detectors>
     
-    <!-- TODO: Do I need indentation rules? 
-    <indentation>
-        <increase>
-            <expression>(\{[^}\"']*$)|(\[[^\]\"']*$)|(\([^)\"']*$)</expression>
-        </increase>
-        <decrease>
-            <expression>^\s*(\s*/\*.*\*/\s*)*[\}\]\)\\]</expression>
-        </decrease>
-    </indentation> -->
-    
-   <!-- <comments>
-       <single>
-           <expression>#</expression>
-       </single>
-    </comments> -->
-    
-    <!-- <brackets>
-        <pair open="{" close="}" />
-    </brackets> -->
-    
-    <!-- <surrounding-pairs>
-        <pair open="&lt;" close="&gt;" />
-        <pair open="{" close="}" />
-        <pair open="[" close="]" />
-        <pair open="(" close=")" />
-        <pair open="&apos;" close="&apos;" />
-        <pair open="&quot;" close="&quot;" />
-        <pair open="`" close="`" />
-    </surrounding-pairs> -->
     
     <scopes>
        <include syntax="self" collection="objects"/>
@@ -53,15 +24,22 @@
        <!--Symbols  -->         
        <collection name="symbols">
           <scope name="json.string.key.double-quoted">
-             <symbol type="constant"/>
-             <!-- <include syntax="json" collection="strings"/> -->
+             <include syntax="json" />
+             <symbol type="constant">
+                <display-name>
+                   <component variable="name" replace="(&quot;|:)" replace-with="" />
+                </display-name>
+             </symbol>            
               <expression>(&quot;)(?:(?:(\\(?:\\|&apos;|&quot;|n|r|t|b|f))|([^&quot;]))*)(&quot;)\s*(:)</expression>
               <capture number="1" name="json.string.key.double-quoted.delimiter" />
               <capture number="2" name="json.string.key.double-quoted.escape" />
               <capture number="3" name="json.string.key.double-quoted.content" />
               <capture number="4" name="json.string.key.double-quoted.delimiter" />
               <capture number="5" name="json.operator.colon" />
-          </scope>
+              <subscopes>
+                   <!-- <include syntax="self" collection="enums" /> -->
+              </subscopes>
+          </scope> 
        </collection>
 
        <collection name="objects">
@@ -74,14 +52,40 @@
          </scope>
          <scope name="json.object.open">
             <symbol type="constant">
-               <context behavior="start" group-by-name="true" />
+               <context behavior="start" group-by-name="true" unclosed="parent" />
+               <display-name>
+                   <component variable="name" replace="(&quot;|:|{)" replace-with="" />
+                </display-name>
             </symbol>
-            <expression>{</expression>
-            <capture number="1" name="json.object.name" />
+            <expression>(&quot;)(?:(?:(\\(?:\\|&apos;|&quot;|n|r|t|b|f))|([^&quot;]))*)(&quot;)\s*(:)\s*{</expression>
+            <capture number="0" name="json.object.name" />
             <subscopes>
                  <include syntax="self" collection="symbols" />
+                 <include syntax="self" collection="enums" />
             </subscopes>
          </scope>
        </collection>
+       
+       <collection name="enums">
+          <scope name="json.enum.close">
+             <symbol type="enum">
+                <context behavior="end" group-by-name="true" />
+             </symbol>
+             <expression>]</expression>
+             <capture number="1" name="json.enum.name" />
+          </scope>
+          
+          <scope name="json.enum.open">
+             <symbol type="enum">
+                <context behavior="start" group-by-name="true" unclosed="parent" />
+                <display-name>
+                    <component variable="name"/>
+                 </display-name>
+             </symbol>
+             <expression>[</expression>
+             <capture number="0" name="json.enum.name" />
+          </scope>
+        </collection>
+        
     </collections>
 </syntax>
